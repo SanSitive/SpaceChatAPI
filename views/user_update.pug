@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  div.profile-picture.text-center
+    img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture) style="margin-top:4px").border-dark#profil-update-image.rounded.image-profil 
+  form(method='POST' action='/home/user/'+user.UserId+'/update?_method=PATCH' enctype="multipart/form-data")
+    div.form-group
+      h1.user-form-title.text-secondary Modification du profil utilisateur
+      label(for='biography').text-primary Biography:
+      if(undefined===user)
+        textarea#biography.form-control(type='textarea', placeholder='Biography' name='biography' maxlength="150").border.border-primary
+      else 
+        textarea#biography.form-control(type='textarea', placeholder='Biography' name='biography' maxlength="150").border.border-primary=user.UserBiography
+      label(for='pseudo').text-success Pseudo:
+      input#pseudo.form-control(type='textarea', placeholder='Pseudo' name='pseudo' value=(undefined===user ? '' : user.UserPseudo)).border.border-success
+      label(for='picture').text-danger Photo:
+      input#picture.form-control(type='file',name='picture').border.border-danger
+      label(for='style').text-warning Style:
+      select#style.form-control(name='style').border.border-warning
+        each style in styles 
+          option(value=style.StyleName)=style.StyleName
+
+      div.text-center#update-post-form-container
+        button.btn.btn-primary(type='submit')#post-form-update-submit Submit
+  div.errors
+    em(style="margin:auto")=erros
+    if errors
+      ul
+        for error in errors
+          li= error.msg

@@ -1,0 +1,17 @@
+extends layout
+
+block content
+
+    form(method='POST' action=('/home/user/'+session.Identify+'/post/'+post._id+'/delete?_method=DELETE') encode="X-www-form-urlencoded" ).text-center.center-vertical
+      h1 Delete
+      p(style="font-size:x-large") Do you really want to delete this Post?
+        div.form-group
+        input#postid.form-control(type='hidden',name='postid', required='true', value=post._id )
+
+        button.btn.btn-primary(type='submit') Delete
+    div.errors
+    em(style="margin:auto")=erros
+    if errors
+      ul
+        for error in errors
+          li= error.msg

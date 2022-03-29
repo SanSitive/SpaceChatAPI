@@ -1,0 +1,16 @@
+extends layout
+
+block content
+    if(done)
+        form(method='POST' action='')
+            div.form-group
+                label(for='tag') Description:
+                input#tag.form-control(type='textfield', placeholder='Your tags' name='tag')
+            button.btn.btn-primary(type='submit') Search
+    div(style="margin-left:8px").posts_container
+      each post in posts 
+        if(post.PostAuthorStatus != 'Banned')
+          div.post.flex-box 
+              a(href='/home/user/'+post.PostAuthorId+'/post/'+post._id)
+                  img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-search 
+                

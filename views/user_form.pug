@@ -1,0 +1,23 @@
+extends layout
+
+block content
+
+  form(method='POST' action='')
+    div.form-group
+      h1.user-form-title.text-secondary Creation d'utilisateur
+      label(for='identifiant' style="color:#007bff") Identify:
+      input#identifiant.form-control(type='text', placeholder='Your id' name='identifiant' value=(undefined===user ? '' : user.identifiant)).border.border-primary
+      label(for='pseudo' style="color:#28a745") User Name:
+      input#pseudo.form-control(type='text', placeholder='Your user name' name='pseudo' value=(undefined===user ? '' : user.pseudo)).border.border-success
+      label(for='email' style="color:#dc3545") Email:
+      input#mail.form-control(type='email', placeholder='Your email' name='email' value=(undefined===user ? '' : user.mail)).border.border-danger
+      label(for='password' style="color:#ffc107") Password:
+      input#password.form-control(type='password', placeholder='Your password' name='password' value=(undefined===user ? '' : user.password)).border.border-warning
+      div.text-center#create-user-form-container
+        button.btn.btn-primary(type='submit')#user-form-creation-submit Submit
+  div.errors
+    em(style="margin:auto")=erros
+    if errors
+      ul
+        for error in errors
+          li= error.msg

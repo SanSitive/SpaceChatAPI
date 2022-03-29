@@ -1,0 +1,19 @@
+extends layout
+
+block content
+
+  form(method='POST' action='' enctype="multipart/form-data")
+    div.form-group
+      h1.user-form-title.text-secondary Créer un post
+      label(for='description' style="color:#007bff") Description:
+      input#name.form-control(type='textfield', placeholder='Your description' name='description' value=(undefined===post ? '' : post.description)).border.border-primary
+      label(for='picture' style="color:#28a745") Photo:
+      input#name.form-control(type='file',name='picture').form-control-file.border.border-success
+      div.text-center#create-post-form-container
+        button.btn.btn-primary(type='submit')#post-form-creation-submit Submit
+  div.errors
+    em(style="margin:auto")=erros
+    if errors
+      ul
+        for error in errors
+          li= error.msg

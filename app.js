@@ -16,7 +16,12 @@ let postRouter = require('./routes/post');
 let feedRouter = require('./routes/feed');
 let connectionRouter = require('./routes/connection');
 let commentRouter = require('./routes/comments');
-
+let API_UserRouter = require('./routes/API_User');
+let API_TagRouter = require('./routes/API_Tag')
+let API_CommentRouter = require('./routes/API_Comment')
+let API_PostRouter = require('./routes/API_Post')
+let API_FollowRouter = require('./routes/API_Follow')
+let API_StyleRouter = require('./routes/API_Style')
 
 let app = express();
 let mongoose = require('mongoose');
@@ -54,6 +59,12 @@ app.use('/home',postRouter);
 app.use('/home',feedRouter);
 app.use('/home',connectionRouter);
 app.use('/home',commentRouter);
+app.use('/API',API_UserRouter);
+app.use('/API', API_TagRouter);
+app.use('/API', API_CommentRouter)
+app.use('/API', API_PostRouter)
+app.use('/API', API_FollowRouter)
+app.use('/API', API_StyleRouter)
 
 
 // catch 404 and forward to error handler

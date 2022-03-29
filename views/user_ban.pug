@@ -1,0 +1,18 @@
+extends layout
+
+block content
+
+    form(method='POST' action='/home/user/'+user.UserId+'/ban?_method=PATCH' encode="X-www-form-urlencoded").text-center
+        h1= 'User '+user.UserId
+        p(style="font-size:x-large") Do you really want to ban this User?
+        img(src= ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+ user.UserPicture))
+        p(style="font-size:x-large")=user.UserBiography
+        div.form-group
+        input#userid.form-control(type='hidden',name='userid', required='true', value=user._id )
+        button.btn.btn-primary(type='submit') Ban
+    div.errors
+        em(style="margin:auto")=erros
+        if errors
+            ul
+                for error in errors
+                    li= error.msg

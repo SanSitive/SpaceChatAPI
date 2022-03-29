@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  div.profile-picture.text-center 
+    img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture)).border-dark#profil-update-image.rounded.image-profil
+  form(method='POST' action='/home/user/'+user.UserId+'/parameter?_method=PATCH')
+    div.form-group
+      h1.user-form-title.text-secondary Modification des paramètres utilisateurs
+      label(for='email').text-primary Email:
+      input#email.form-control(type='email', placeholder='Email' name='email' value=(undefined===user ? '' : user.UserEmail)).border.border-primary
+      label(for='password_a').text-success New Password:
+      input#password1.form-control(type='password', placeholder='Password' name='password_a').border.border-success
+      label(for='password_b').text-danger Enter again you New Password:
+      input#password2.form-control(type='password', placeholder='Password' name='password_b').border.border-danger
+      div.text-center#update-post-form-container
+       button.btn.btn-primary(type='submit')#post-form-update-submit Submit
+  div.errors
+    em(style="margin:auto")=erros
+    if errors
+      ul
+        for error in errors
+          li= error.msg

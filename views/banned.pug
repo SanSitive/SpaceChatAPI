@@ -1,0 +1,17 @@
+extends layout
+
+block content
+    div.posts_container  
+        each user in users 
+            div.post-card-user.border-secondary.border
+                        div.card-header
+                            div.card-title
+                                h5='@'+user.UserId
+                        div.image-banned.text-center
+                            img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture )).image-banned
+                        div.card-body.text-center
+                            p.card-text= user.UserBiography 
+                            a(href='/home/user/'+user.UserId+'/unban').btn.btn-primary Unban
+    if(errors)
+        p= errors
+                

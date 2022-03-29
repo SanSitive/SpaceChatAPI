@@ -1,0 +1,48 @@
+extends layout 
+
+block content 
+    if(user.UserStatus != 'Banned')
+        div.profil_data.text-center
+            h2(style="font-weight:bold")= "@ " +user.UserId
+            h4= 'Alias ' + ((undefined == user.UserPseudo) ? '': "' "+user.UserPseudo+" '")
+            img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture)).border-dark#profil-update-image.rounded-circle.image-profil
+            h5(style="font-weight:bold") Biography: 
+            p(style="text-overflow:ellipsis; width:50%; margin:auto").biography= user.UserBiography
+            if(session)
+                if(session.Identify != user.UserId)
+                    div.flex-container
+                        div.intermediate-container
+                            form(method='POST' action='/home/user/'+user.UserId+'/follow_create' encode="X-www-form-urlencoded" style="display:inline-block; margin-right:-4px")
+                                div.form-group
+                                    input.form-control(type='hidden',name='follow', required='true', value=user._id )
+                                    button.btn.btn-success(type='submit') Follow
+                            form(method='POST' action='/home/user/'+user.UserId+'/follow_delete?_method=DELETE' encode="X-www-form-urlencoded" style="display:inline-block")
+                                div.form-group
+                                    input.form-control(type='hidden',name='unfollow', required='true', value=user._id )
+                                    button.btn.btn-danger(type='submit') Unfollow
+                            if(session.Status == 'Admin')
+                                form(method='POST' action='/home/user/'+user.UserId+'/ban?_method=GET' encode="X-www-form-urlencoded"  style="display:inline-block")
+                                    div.form-group
+                                        input.form-control(type='hidden',name='ban', required='true', value=user._id )
+                                        button.btn.btn-dark(type='submit') Ban
+                else
+                    div 
+                        a(href='/home/user/'+user.UserId+'/parameter').btn.btn-secondary Parameter 
+                        a(href='/home/user/'+user.UserId+'/update').btn.btn-secondary Update 
+        div.posts_container.text-center 
+            each post in posts 
+                div.post-card-user.border-secondary.border
+                    div.card-header
+                        img(src = ((undefined == user.UserPicture) ? '/images/default_user_image.jpg' : '/'+user.UserPicture )).image-user-feed.rounded-circle
+                        div.card-title
+                            h5='@'+user.UserId
+                    div.image-post-feed
+                        img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-in-post
+                    div.card-body
+                        p.card-text= post.PostDescription 
+                        p= 'Publié le ' + post.date
+                        a(href='/home/user/'+user.UserId+'/post/'+post._id).btn.btn-primary Voir le post en détail
+    else
+        div(style="text-align:center").center-vertical
+            h1= title
+            p User not found / ban

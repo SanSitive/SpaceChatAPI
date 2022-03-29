@@ -1,0 +1,27 @@
+body {
+    background-color: rgba(44,43,44,255);
+    color:white;
+    background-image: url('../images/stars.jpg')
+}
+
+nav{
+    background-color: rgba(33,32,34,255);
+}
+
+.dark_mode{
+    background-color: rgba(33,32,34,255);
+}
+
+.card-header{
+    background-color:  rgba(33,32,34,255) ;
+}
+.image-post-feed{
+    background-color: #3c3c3c;
+}
+.post-card-user{
+    background-color:  #3c3c3c;
+}
+
+.comment{
+    background-color: #3c3c3c;
+}
