@@ -20,19 +20,22 @@ exports.APIgetAllFollowNotEqualSuivant = (req,res,next) =>{
         }
     }).catch(err => { console.log(err); res.sendStatus(500)})
 }
-
 exports.APIisCurrentUserFollowing = (req,res,next) =>{
-    if(req.body){
-        Follow.findOne({'UserIdSuivant':req.body.user_a, 'UserIdSuivi':req.body.user_b}).then(follow => {
+        Follow.countDocuments({'UserIdSuivant':req.params.user_suivant,'UserIdSuivi':req.params.user_suivi}).then(count => {
+            let obj = {number : count}
+            res.status(200).send(JSON.stringify(obj))
+            
+        }).catch(err => {console.log(err); res.sendStatus(500)}) //INTERNAL ERROR
+        
+}
+
+exports.APIgetSpecificInstance = (req,res,next) =>{
+        Follow.findOne({'UserIdSuivant':req.params.user_suivant, 'UserIdSuivi':req.params.user_suivi}).then(follow => {
             if(follow){res.status(200).send(follow)}
             else{res.sendStatus(404)}
         }).catch(err => {console.log(err); res.sendStatus(500)}) //INTERNAL ERROR
 
-    }else{
-        res.sendStatus(400) //BAD REQUEST
-    }
 }
-
 exports.APIcreate = (req,res,next) => {
     if(req.body){
         console.log(req.body)

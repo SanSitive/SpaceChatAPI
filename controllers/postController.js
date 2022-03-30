@@ -10,7 +10,11 @@ const upload = multer({
     dest: 'uploads/'
 });
 const { diffIndexes } = require('../models/user');
-const fs = require('fs-extra');
+
+const Common = require('../Common');
+const fetch = require('node-fetch');
+const config = require('../config');
+
 
 
 const user_function = require('../API/user');
@@ -21,12 +25,16 @@ const tag_function = require('../API/tag')
 // GET request for create post page
 // Renvoie la page de création de post
 exports.user_create_postpage_get = function(req,res,next){
-    if(user_function.isConnected(req)){
-        user_function.getUserById(req.session.user_id).then( (user) => {
+    if(Common.isConnected(req)){
+        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+            method:'GET',
+            headers:{"Content-Type" : "application/json"},
+            mode:'cors'
+        }).then(response => response.json()).then( user =>{
             if(user){
                 if(req.params.user_id == user.UserId){
                     let session;
-                    if(user_function.isConnected(req)){session = req.session}
+                    if(Common.isConnected(req)){session = req.session}
                     res.render('post_form',{title: 'Post Form', session:session});
                 }else{
                     res.redirect('/home/feed');
@@ -34,7 +42,7 @@ exports.user_create_postpage_get = function(req,res,next){
             }else{
                 res.redirect('/home/feed');
             }
-        }).catch(err => {next(err)})
+        }).catch(err => Common.error(err,res))
     }else{
         res.redirect('/home/feed');
     }
@@ -52,7 +60,7 @@ exports.user_create_postpage_post = function(req,response,next){
     // Extract the validation errors from a request.
     const errors = validationResult(req);
     let session;
-    if(user_function.isConnected(req)){session = req.session}
+    if(Common.isConnected(req)){session = req.session}
     
     //Create a user for temporary stock the data
     if (!req.body.description || !req.file){
@@ -70,38 +78,53 @@ exports.user_create_postpage_post = function(req,response,next){
         return;
     }
     else {
-        if(user_function.isConnected(req)){
-            user_function.getUserById(req.session.user_id).then((user)=>{
+        if(Common.isConnected(req)){
+            fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+                method:'GET',
+                headers:{"Content-Type" : "application/json"},
+                mode:'cors'
+            }).then(response => response.json()).then( user => {
                 if(user){
                     if(req.params.user_id == user.UserId){
-                        tag_function.getAllTags().then((tags) => {//récupère tout les tags existants
+                        fetch(config.API_URI+'/tags',{
+                            method:'GET',
+                            headers:{"Content-Type" : "application/json"},
+                            mode:'cors'
+                        }).then(response => response.json()).then( tags =>{
                             let object = prepareTagToCreate(req,user,tags);//Prépare les tableaux d'id de tag à créer ou pas
                             let tagsNotCreated = object.tagsNotCreated;
                             let tagsIdCreated = object.tagsIdCreated;
-                            async.each(tagsNotCreated,function(tag,callback){//Pour chaque tags à créer on le fait
-                                let instance = tag_function.create(tag);
-                                tag_function.save(instance).then(() => {
-                                    tagsIdCreated.push(instance._id);
-                                    callback(null, instance);
-                                }).catch(err => {next(err)})
-                            },function(err){
-                                if(err){next(err)}
+                            async.each(tagsNotCreated,function(tag,callback){
+                                let instance = {TagName: tag}
+                                fetch(config.API_URI+'/tag/create',{
+                                    method:'POST',
+                                    headers:{"Content-Type" : "application/json"},
+                                    mode:'cors',
+                                    body:JSON.stringify(instance)
+                                }).then(response => response.json()).then( tag_res =>{
+                                    tagsIdCreated.push(tag_res._id);
+                                    callback(null,tag_res)
+                                }).catch(err => Common.error(err,res))
+                            },function(){
                                 let post ={
                                     PostAuthor : user._id,
                                     PostDescription : req.body.description,
-                                    PostTags : tagsIdCreated
+                                    PostTags : tagsIdCreated,
+                                    PostPicture : req.file.path
                                 }
-                                let instance = post_function.create(post.PostDescription,post.PostAuthor,post.PostTags,req.file.path);
-                                post.PostTags = tagsIdCreated;
-                                post_function.save(instance).then(()=>{
+                                fetch(config.API_URI+'/post/create',{
+                                    method:'POST',
+                                    headers:{"Content-Type" : "application/json"},
+                                    mode:'cors',
+                                    body:JSON.stringify(post)
+                                }).then(response => response).then( post =>{
                                     response.redirect('/home/user/'+user.UserId)
-
-                                }).catch(err => {next(err)})
-                            });
-                        }).catch(err => {next(err)})
+                                }).catch(err => Common.error(err,res))
+                            })
+                        })
                     }
                 }
-            })
+            }).catch(err => Common.error(err,res))
         }else{
             response.redirect('/home/feed');
         }

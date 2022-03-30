@@ -22,7 +22,7 @@ exports.APIcreate = (req,res,next) => {
     if(req.body){
         const instance = new Tag(req.body)
         instance.save().then( result => {
-            res.sendStatus(201); //CREATE
+            res.status(201).send(result); //CREATE
         }).catch(err => {
             console.log(err)
             res.sendStatus(409) //CONFLICT

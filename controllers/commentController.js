@@ -6,6 +6,9 @@ const upload = multer({
     dest: 'uploads/'
 });
 const { diffIndexes } = require('../models/user');
+const Common = require('../Common');
+const fetch = require('node-fetch');
+const config = require('../config')
 
 const user_function = require('../API/user');
 const comment_function = require('../API/comment');
@@ -25,17 +28,25 @@ exports.post_comment = function(req,res,next){
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
         res.redirect('/home/user/'+req.params.user_id+'/post/'+req.params.post_id);
-    }else if(user_function.isConnected(req)){
-        user_function.getUserById(req.session.user_id).then((user)=>{
+    }else if(Common.isConnected(req)){
+        fetch(config.API_URI + '/user/by_id/' + req.session.user_id).then(response => response.json()).then( user =>{
             if(user){
-                let instance = comment_function.create(req.params.post_id,user._id,req.body.content);
-                comment_function.save(instance).then((comment)=>{
+                let instance = {};
+                instance.CommentPostId = req.params.post_id;
+                instance.CommentAuthorId = user._id;
+                instance.CommentContent = req.body.content;
+                fetch(config.API_URI+'/comment/create',{
+                    method:'POST',
+                    headers:{"Content-Type" : "application/json"},
+                    mode:'cors',
+                    body : JSON.stringify(instance)
+                }).then(response =>{
                     res.redirect('/home/user/'+req.params.user_id+'/post/'+req.params.post_id);
-                }).catch(err => {next(err)})
+                }).catch(err => Common.error(err,res));
             }else{
                 res.redirect('/home/user/'+req.params.user_id+'/post/'+req.params.post_id);
             }
-        }).catch(err => {next(err)})
+        }).catch(err => Common.error(err,res));
     }else{
         res.redirect('/home/user/'+req.params.user_id+'/post/'+req.params.post_id);
     }

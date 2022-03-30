@@ -2,16 +2,16 @@
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs')
-
-
-const user_function = require('../API/user');
+const config = require('../config');
+const Common = require('../Common')
+const fetch = require('node-fetch');
 
 /// CONNECTION ROUTES ///
 // GET request for connection page.
 // Renvoie la page de connexion
 exports.connection_get = function(req,res,next){
     let session;
-    if(user_function.isConnected(req)){session = req.session}
+    if(Common.isConnected(req)){session = req.session}
     res.render('connection_form',{title:'Connection', session:session});
 };
 
@@ -39,7 +39,12 @@ exports.connection_getdata = function(req,res,next){
             password : String(req.body.password)
         };
         // Data from form is valid. Check DB
-        user_function.connection(user_data.pseudo).then((user) => {
+
+        fetch(config.API_URI + '/user/populated/by_identify/'+user_data.pseudo,{
+            method: 'GET',
+            headers:{"Content-Type" : "application/json"},
+            mode:'cors'
+        }).then( response => response.json()).then( user =>{
             if (user){
                 bcrypt.compare(user_data.password,user.UserPassword).then(response =>{
                     if(response && user.UserStatus!='Banned'){
@@ -48,7 +53,7 @@ exports.connection_getdata = function(req,res,next){
                         sess.Identify = user.UserId;
                         sess.Status = user.UserStatus;
                         sess.Style = user.UserMode.StyleUrl
-                        res.redirect(user.url);
+                        res.redirect('/home/user/'+user_data.pseudo);
                     }else{
                         let erros = "Votre mot de passe ou identifiant n'est pas le bon";
                         if(user.UserStatus =='Banned'){
@@ -56,12 +61,12 @@ exports.connection_getdata = function(req,res,next){
                         }
                         res.render('connection_form', { title: 'Connection',user:req.body,erros: erros });
                     }
-                }).catch(err => next(err))
+                }).catch(err => Common.error(err,res))
             }else{
                 let erros = "Votre mot de passe ou identifiant n'est pas le bon";
                 res.render('connection_form', { title: 'Connection',user:req.body,erros: erros });
             }
-        }).catch(err => { next(err)})
+        }).catch(err => Common.error(err,res))
     }
    
 
@@ -71,7 +76,7 @@ exports.connection_getdata = function(req,res,next){
 // GET request for disconnection page.
 // Permet de se déconnecter en détruisant la session associé
 exports.disconnection_get = function(req,res,next){
-    if(user_function.isConnected(req)){
+    if(Common.isConnected(req)){
         req.session.destroy();
     }
     res.redirect('/home')

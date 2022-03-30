@@ -35,10 +35,16 @@ router.get('/user/by_id/:id', API_User.APIgetById);
 router.get('/user/by_identify/:id', API_User.APIgetByIdentify);
 
 // GET request for getting user by identify
+router.get('/user/populated/by_identify/:id', API_User.APIgetByIdentify);
+
+// GET request for getting user by identify
 router.get('/user/connection/:id', API_User.APIconnection);
 
 // GET request for getting alls users that are banned
 router.get('/users/banned', API_User.APIgetAllUserBanned);
+
+// GET request to know the number of instance that have the same identify
+router.get('/user/count/:id',API_User.APIcountSameIdentify);
 
 //POST request for creating user
 router.post('/user/create',API_User.APIcreate);

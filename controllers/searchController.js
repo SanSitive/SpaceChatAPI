@@ -1,9 +1,9 @@
-
+const fetch = require('node-fetch');
+const config = require('../config');
+const Common = require('../Common');
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 
-const user_function = require('../API/user');
-const post_function = require('../API/post');
 
 const tag_function = require('../API/tag');
 
@@ -13,14 +13,17 @@ const tag_function = require('../API/tag');
 //GET (Users may find people who they already follow)
 // But : Charger une page contenant que des utilisateurs non suivies par l'utilisateur
 exports.search_get = function(req,res,next){
-    post_function.getAllPosts_PopulatedByAuthor().then((posts)=>{
+    fetch(config.API_URI + '/posts/populated',{
+        method:'GET',
+        headers:{"Content-Type" : "application/json"},
+        mode:'cors'
+    }).then(response => response.json()).then(posts => {
         posts.sort(function compare(a,b){return b.PostDate - a.PostDate});
         let PostARenvoyer = [];
         for(let i=0; i<posts.length; i++){
             //ne sélectionne que les utilisateurs non bannis
             if(posts[i].PostAuthor.UserStatus != 'Banned'){
                 let instance = {
-                    PostPicture : posts[i].PostPicture.slice(7),
                     PostDescription : posts[i].PostDescription,
                     PostLike : posts[i].PostLike,
                     PostDate : posts[i].PostDate,
@@ -29,15 +32,17 @@ exports.search_get = function(req,res,next){
                     PostAuthorStatus: posts[i].PostAuthor.UserStatus,
                     _id: posts[i]._id
                 }
+                if(posts[i].PostPicture){
+                    instance.PostPicture = posts[i].PostPicture.slice(7)
+                }
                 PostARenvoyer.push(instance);
             }
         }
-        //mélange la séquence
         shuffle(PostARenvoyer);
         let session;
-        if(user_function.isConnected(req)){session = req.session}
+        if(Common.isConnected(req)){session = req.session}
         res.render('search',{title:'Search', posts:PostARenvoyer, session:session});
-    }).catch(err => {next(err)})
+    }).catch(err => Common.error(err,res))
 }
 
 

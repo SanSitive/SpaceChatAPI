@@ -13,8 +13,16 @@ exports.APIgetByIdentify = (req,res,next) =>{
 
     User.findOne({'UserId': req.params.id}).then( user =>{
         if(user){ res.status(200).send(user)}
-         else{ res.status(404).send(user);}
+         else{ res.sendStatus(404);}
     }).catch(err => {res.sendStatus(500)});//INTERNAL ERROR
+}
+
+
+exports.APIgetByIdentify = (req,res,next) => {
+    User.findOne({'UserId':req.params.id}).populate('UserMode').then(user => {
+        if(user){res.status(200).send(user)}
+        else{ res.sendStatus(404)}
+    }).catch(err => {res.sendStatus(500)});
 }
 
 exports.APIconnection = (req,res,next) =>{
@@ -43,7 +51,9 @@ exports.APIcreate = (req,res,next) => {
 exports.APIsave = (req,res,next) => {
     if(req.body){
         const instance = req.body;
+        console.log(instance)
         User.findByIdAndUpdate(instance._id, instance).then(result => {
+            console.log(result)
             if(result) res.sendStatus(204); //NO CONTENT
             else res.sendStatus(404) //NOT FOUND
         }).catch(err => {
@@ -67,4 +77,11 @@ exports.APIgetAllUserBanned = (req,res,next) =>{
         res.status(200).send(users);
     }).catch(err => { res.sendStatus(500)}) //INTERNAL ERROR
 
+}
+
+exports.APIcountSameIdentify = (req,res,next) =>{
+    User.countDocuments({'UserId':req.params.id}).then( count => {
+        let instance = {number : count}
+        res.status(200).send(JSON.stringify(instance));
+    }).catch(err => {res.sendStatus(500)})//INTERNAL ERROR
 }
