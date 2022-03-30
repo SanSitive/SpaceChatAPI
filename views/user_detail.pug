@@ -40,7 +40,7 @@ block content
                         img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-in-post
                     div.card-body
                         p.card-text= post.PostDescription 
-                        p= 'Publié le ' + post.date
+                        p= 'Publié le ' + post.PostDate
                         a(href='/home/user/'+user.UserId+'/post/'+post._id).btn.btn-primary Voir le post en détail
     else
         div(style="text-align:center").center-vertical

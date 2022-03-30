@@ -1,25 +1,13 @@
 
 let async = require('async');
-let Post = require('../models/post');
-let Comment = require('../models/comment');
 let Tag = require('../models/tag');
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
-const multer = require('multer');
-const upload = multer({
-    dest: 'uploads/'
-});
 const { diffIndexes } = require('../models/user');
 
 const Common = require('../Common');
 const fetch = require('node-fetch');
 const config = require('../config');
-
-
-
-const user_function = require('../API/user');
-const post_function = require('../API/post');
-const tag_function = require('../API/tag')
 
 
 // GET request for create post page
@@ -135,62 +123,69 @@ exports.user_create_postpage_post = function(req,response,next){
 // GET request for specific post
 // Renvoie la page d'un post spécifique
 exports.user_specific_postpage_get = function(req,res,next){
-    async.series([
-        function(callback){//Cherche le post correspondant à l'url
-            Post.findOne({'_id': req.params.post_id}).populate('PostAuthor').exec(function(err,post){
-                if(err){
-                    callback(err)
+    fetch(config.API_URI+'/post/populated/id/'+req.params.post_id,{
+        method:'GET',
+        headers:{"Content-Type" : "application/json"},
+        mode:'cors' 
+    }).then(response => response.json()).then(post =>{
+        if(post){
+            fetch(config.API_URI+'/comments/'+req.params.post_id,{
+                method:'GET',
+                headers:{"Content-Type" : "application/json"},
+                mode:'cors'
+            }).then(response => response.json()).then( comments => {
+                let user;
+                if(post.PostAuthor.UserPicture){
+                    user = post.PostAuthor.UserPicture.slice(7);
                 }
-                callback(null,post)
-            })
-        },
-        function(callback){//Cherche les commentaires correspondant au post
-            Comment.find({'CommentPostId': req.params.post_id}).populate('CommentAuthorId').exec(function(err,comments){
-                if(err){
-                    callback(err)
+                if(comments){
+                    comments = comments.sort(function compare(a,b){ return b.CommentDate - a.CommentDate});
                 }
-                callback(null,comments)
-            })
+                let session;
+                if(Common.isConnected(req)){session = req.session}
+                if(post.PostPicture){
+                    post.PostPicture = post.PostPicture.slice(7)
+                }
+                res.render('post_detail',{title: 'Post detail', post: post,userPicture: user,comments: comments, session:session})
+            }).catch(err => Common.error(err,res));
+        }else{
+            res.render('post_detail',{title: 'Post detail', session:session})
         }
-    ],
-    function(err,resultat){
-        if(err){
-            return next(err);
-        }
-        let user = resultat[0].PostAuthor.UserPicture.slice(7);
-        let comments = resultat[1].sort(function compare(a,b){ return b.CommentDate - a.CommentDate});
-        let session;
-        resultat[0].PostPicture = resultat[0].PostPicture.slice(7)
-        if(user_function.isConnected(req)){session = req.session}
-        res.render('post_detail',{title: 'Post detail', post: resultat[0],userPicture: user,comments: comments, session:session})
-    }
-    )
+    }).catch(err => Common.error(err,res))
 };
 
 
 // GET request for update a specific post
 // Renvoie la page d'update de post
 exports.user_specific_post_updatepage_get = function(req,res,next){
-    if(user_function.isConnected(req)){
-        user_function.getUserById(req.session.user_id).then((user) => {
+    if(Common.isConnected(req)){
+        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+            method:'GET',
+            headers:{"Content-Type" : "application/json"},
+            mode:'cors'
+        }).then(response => response.json()).then( user =>{
             if(user){
                 if(req.params.user_id == user.UserId){//Si l'on est bien l'auteur du post on accède à la page de modification
-                    post_function.getPostById(req.params.post_id).then((post)=>{
+                    fetch(config.API_URI+'/post/'+req.params.post_id,{
+                        method:'GET',
+                        headers:{"Content-Type" : "application/json"},
+                        mode:'cors'
+                    }).then(response => response.json()).then( post => {
                         if(post){
                             let session;
-                            if(user_function.isConnected(req)){session = req.session}
+                            if(Common.isConnected(req)){session = req.session}
                             res.render('post_update_form',{title: 'Post Form',post: post, session:session});
                         }else{
                             res.redirect('/home/feed');
                         }
-                    }).catch(err => {next(err)})
+                    }).catch(err => Common.error(err,res));
                 }else{
                     res.redirect('/home/feed');
                 }
             }else{
                 res.redirect('/home/feed');
             }
-        }).catch(err => {next(err)})
+        }).catch(err => Common.error(err,res))
     }else{
         res.redirect('/home/feed');
     }
@@ -207,7 +202,7 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
     // Extract the validation errors from a request.
     const errors = validationResult(req);
     let session;
-    if(user_function.isConnected(req)){session = req.session}
+    if(Common.isConnected(req)){session = req.session}
     
     if (!errors.isEmpty()) {
         // There are errors. Render form again with sanitized values/error messages.
@@ -215,31 +210,53 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
         return;
     }
     else {
-        if(user_function.isConnected(req)){
-            user_function.getUserById(req.session.user_id).then((user)=>{
+        if(Common.isConnected(req)){
+            fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+                method:'GET',
+                headers:{"Content-Type" : "application/json"},
+                mode:'cors'
+            }).then(response => response.json()).then( user => {
                 if(user){
                     if(req.params.user_id == user.UserId){
-                        tag_function.getAllTags().then((tags) => {//Récupère tout les tags 
+                        fetch(config.API_URI+'/tags',{
+                            method:'GET',
+                            headers:{"Content-Type" : "application/json"},
+                            mode:'cors'
+                        }).then(response => response.json()).then( tags => {
                             let object = prepareTagToCreate(req,user,tags);//Prépare les tableaux pour savoir quels tags créer ou pas
                             let tagsNotCreated = object.tagsNotCreated;
                             let tagsIdCreated = object.tagsIdCreated;
                             async.each(tagsNotCreated,function(tag,callback){//Pour chaque tags à créer on le fait
-                                let instance = tag_function.create(tag);
-                                tag_function.save(instance).then(() => {
-                                    tagsIdCreated.push(instance._id);
-                                    callback(null, instance);
-                                }).catch(err => {next(err)})
+                                let instance = {TagName : tag};
+                                fetch(config.API_URI+'/tag/create',{
+                                    method:'POST',
+                                    headers:{"Content-Type" : "application/json"},
+                                    mode:'cors',
+                                    body:JSON.stringify(instance)
+                                }).then(response => response.json()).then( tag_res =>{
+                                    tagsIdCreated.push(tag_res._id);
+                                    callback(null,tag_res)
+                                }).catch(err => Common.error(err,res))
                             },function(err){
-                                let news = { PostDescription: req.body.description, PostTags: tagsIdCreated}
-                                post_function.update(req.params.post_id,news).then(()=>{//On update le post avec les bons tags
-                                    response.redirect('/home/user/'+user.UserId+'/post/'+req.params.post_id)
-
-                                }).catch(err => {next(err)})
-                            });
-                        }).catch(err => {next(err)})
+                                let post ={
+                                    _id: req.params.post_id,
+                                    PostAuthor : user._id,
+                                    PostDescription : req.body.description,
+                                    PostTags : tagsIdCreated,
+                                }
+                                fetch(config.API_URI+'/post/update',{
+                                    method:'PATCH',
+                                    headers:{"Content-Type" : "application/json"},
+                                    mode:'cors',
+                                    body:JSON.stringify(post)
+                                }).then(response => response).then( post =>{
+                                    response.redirect('/home/user/'+user.UserId)
+                                }).catch(err => Common.error(err,res))
+                            })
+                        }).catch(err => Common.error(err,res))
                     }
                 }
-            }).catch(err => {next(err)})
+            }).catch(err => Common.error(err,res))
         }else{
             response.redirect('/home/feed');
         }
@@ -250,26 +267,34 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
 // GET request for specific post on delete page
 // Renvoie une page pour confirmer que l'on veut bien détruire le post
 exports.user_specific_post_deletepage_get = function(req,res,next){
-    if(user_function.isConnected(req)){
-        user_function.getUserById(req.session.user_id).then((user) => {
+    if(Common.isConnected(req)){
+        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+            method:'GET',
+            headers:{"Content-Type" : "application/json"},
+            mode:'cors'
+        }).then(response => response.json()).then(user => {
             if (user){
                 if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){//Si l'utilisateur est bien celui concerné par la page
-                    post_function.getPostById(req.params.post_id).then((post) =>{
+                    fetch(config.API_URI+'/post/'+req.params.post_id,{
+                        method:'GET',
+                        headers:{"Content-Type" : "application/json"},
+                        mode:'cors'
+                    }).then(response => response.json()).then( post =>{
                         if (post){
                             let session;
-                            if(user_function.isConnected(req)){session = req.session}
+                            if(Common.isConnected(req)){session = req.session}
                             res.render('post_delete',{title: 'Delete Form', post: post, session:session})
                         }else{
                             res.redirect('/home/feed')
                         }
-                    }).catch(err => {next(err)})
+                    }).catch(err => Common.error(err,res))
                 }else{
                     res.redirect('/home/feed');
                 }
             }else{
                 res.redirect('/home/feed');
             }
-        }).catch(err => {next(err)}) 
+        }).catch(err => Common.error(err,res))
     }else{
         res.redirect('/home/feed');
     }
@@ -280,21 +305,31 @@ exports.user_specific_post_deletepage_get = function(req,res,next){
 // DELETE request for specific post on delete page
 // Détruit le post passé en paramètre
 exports.user_specific_post_deletepage_delete = function(req,res,next){
-    if(user_function.isConnected(req)){
-        user_function.getUserById(req.session.user_id).then((user)=> {
+    if(Common.isConnected(req)){
+        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+            method:'GET',
+            headers:{"Content-Type" : "application/json"},
+            mode:'cors'
+        }).then(response => response.json()).then( user => {
             if(user){
                 if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){
-                    post_function.delete(req.params.post_id).then((post_res) =>{
+                    let object = {_id: req.params.post_id};
+                    fetch(config.API_URI+'/post/delete',{
+                        method:'DELETE',
+                        headers:{"Content-Type" : "application/json"},
+                        mode:'cors',
+                        body:JSON.stringify(object)
+                    }).then(response => response).then(final => {
                         //if success :
-                            res.redirect('/home/user/'+req.params.user_id)
-                    }).catch(err => {next(err)})
+                        res.redirect('/home/user/'+req.params.user_id)
+                    }).catch(err => Common.error(err,res))
                 }else{
                     res.redirect('/home/feed');
                 }
             }else{
                 res.redirect('/home/feed');
             }
-        }).catch(err => {next(err)})
+        }).catch(err => Common.error(err,res));
     }else{
         res.redirect('/home/feed');
     }

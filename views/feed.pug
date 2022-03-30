@@ -18,7 +18,6 @@ block content
             div
               img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-post-feed
             div.card-body
-              //p.card-text.postdescriptionfeed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
               p.card-text= post.PostDescription  
               p= 'Publié le ' + post.PostDate
               a(href='/home/user/'+post.PostAuthorId+'/post/'+post._id).btn.btn-primary Voir le post en détail

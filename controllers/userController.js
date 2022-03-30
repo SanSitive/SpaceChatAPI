@@ -1,10 +1,6 @@
 let async = require('async');
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
-const multer = require('multer');
-const upload = multer({
-    dest: 'uploads/'
-});
 const { diffIndexes } = require('../models/user');
 
 const config = require('../config')
@@ -462,7 +458,7 @@ exports.user_ban_someone_patch = function(req,res,next){
             mode:'cors'
         }).then(response => response.json()).then(user => {
             if(user.UserStatus == 'Admin'){
-                fetch(config.API_URI+'/user/by_identify/'+req.params.id).then(user_res => {
+                fetch(config.API_URI+'/user/by_identify/'+req.params.id).then(response => response.json()).then(user_res => {
                     let news = {UserStatus : 'Banned'}
                     news._id = user_res._id;
                     fetch(config.API_URI+'/user/update',{

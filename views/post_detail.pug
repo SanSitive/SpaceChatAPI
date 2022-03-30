@@ -2,26 +2,27 @@ extends layout
 
 
 block content 
+    
     div.post-card.border-secondary.border
-          div.card-header
-            img(src = ((undefined == userPicture) ? '/images/default_user_image.jpg' : '/'+ userPicture )).image-user-feed.rounded-circle
-            div.card-title
-                a(href='/home/user/'+post.PostAuthor.UserId)
-                    h5='@'+post.PostAuthor.UserId
+            div.card-header
+                img(src = ((undefined == userPicture) ? '/images/default_user_image.jpg' : '/'+ userPicture ) onerror="this.src='/images/no_image_available.png'").image-user-feed.rounded-circle
+                div.card-title
+                    a(href='/home/user/'+post.PostAuthor.UserId)
+                        h5='@'+post.PostAuthor.UserId
             if(session)
-              if(session.Status == 'Admin')
+                if(session.Status == 'Admin')
                 form(method='POST' action='/home/user/'+post.PostAuthorId+'/post/'+post._id+'/delete?_method=get' encode="X-www-form-urlencoded"  style="display:inline-block")
-                  div.form-group
-                      input.form-control(type='hidden',name='delete', required='true' )
-                      button.btn.btn-dark(type='submit') Delete
-          div.image-post-feed
-            img(src= ((undefined == post.PostPicture) ? '' : '/'+post.PostPicture)).image-post-feed
-          if(session)
-                if(session.Identify == post.PostAuthor.UserId)
-                div.card-body
-                    p.card-text= post.PostDescription  
-                    p= 'Publié le ' + post.date
-                    a(href='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/update').btn.btn-primary Update
+                    div.form-group
+                        input.form-control(type='hidden',name='delete', required='true' )
+                        button.btn.btn-dark(type='submit') Delete
+            div.image-post-feed
+            img(src= ((undefined == post.PostPicture) ? '' : '/'+post.PostPicture) onerror="this.onerror=null;this.src='/images/no_image_available.png';").image-post-feed.img_post_error
+            div.card-body
+                p.card-text= post.PostDescription  
+                p= 'Publié le ' + post.PostDate
+                if(session)
+                    if(session.Identify == post.PostAuthor.UserId)
+                        a(href='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/update').btn.btn-primary Update
     form(method='POST' action='').text-center
         div.form-group
             label(for='content') Commentaire:
@@ -36,4 +37,5 @@ block content
                 div.card-body
                     p.comment-display= comment.CommentContent
                 p= comment.date
-
+block javascript
+    script(type="text/javascript" src="/javascripts/onerror.js")

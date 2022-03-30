@@ -1,17 +1,11 @@
 
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
-const multer = require('multer');
-const upload = multer({
-    dest: 'uploads/'
-});
 const { diffIndexes } = require('../models/user');
 const Common = require('../Common');
 const fetch = require('node-fetch');
 const config = require('../config')
 
-const user_function = require('../API/user');
-const comment_function = require('../API/comment');
 
 
 // COMMENTS ROUTES 
