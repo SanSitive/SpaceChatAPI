@@ -177,6 +177,9 @@ exports.user_specific_post_updatepage_get = function(req,res,next){
                     }).then(response => response.json()).then( post => {
                         if(post){
                             let session;
+                            if(post.PostPicture){
+                                post.PostPicture = post.PostPicture.slice(7)
+                            }
                             if(Common.isConnected(req)){session = req.session}
                             res.render('post_update_form',{title: 'Post Form',post: post, session:session});
                         }else{

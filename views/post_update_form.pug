@@ -20,7 +20,6 @@ block content
           div.image-post-feed
             img(src= ((undefined == post.PostPicture) ? '' : '/'+ post.PostPicture)).image-post-feed
           div.card-body
-            //p.card-text.postdescriptionfeed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
             p.card-text= post.PostDescription 
             p= post.PostLike 
             p= 'Publié le ' + post.PostDate
