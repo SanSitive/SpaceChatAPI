@@ -3,7 +3,6 @@ let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 const { diffIndexes } = require('../models/user');
 
-const config = require('../config')
 const fetch = require('node-fetch')
 const Common = require('../Common')
 
@@ -13,7 +12,7 @@ const bcrypt = require('bcryptjs/dist/bcrypt');
 exports.user_detail_get = function(req,res,next){
     async.waterfall([
         function(callback){//récupère l'utilisateur par son Identify
-            fetch(config.API_URI+'/user/by_identify/'+req.params.id,{
+            fetch(process.env.API_URI+'/user/by_identify/'+req.params.id,{
                 method:'GET',
                 headers:{"Content-Type" : "application/json"},
                 mode:'cors'
@@ -30,7 +29,7 @@ exports.user_detail_get = function(req,res,next){
         }
     ],
     function(user, callback){//récupère les posts de l'utilisateur correspondant
-        fetch(config.API_URI+'/posts/post_author_id/'+user._id,{
+        fetch(process.env.API_URI+'/posts/post_author_id/'+user._id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
@@ -85,7 +84,7 @@ exports.user_create_post = function(req,res,next){
     else {
         //Mot de passe à encrypter
         let passw = req.body.password;
-        fetch(config.API_URI+'/user/count/'+req.body.identifiant,{
+        fetch(process.env.API_URI+'/user/count/'+req.body.identifiant,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
@@ -102,7 +101,7 @@ exports.user_create_post = function(req,res,next){
                         instance.UserPassword = hashed;
                         instance.UserEmail = req.body.email;
                         console.log(instance)
-                        fetch(config.API_URI+'/user/create',{
+                        fetch(process.env.API_URI+'/user/create',{
                             method:'POST',
                             headers:{"Content-Type" : "application/json"},
                             mode:'cors',
@@ -121,14 +120,14 @@ exports.user_create_post = function(req,res,next){
 // Renvoie la page d'update form pour un utilisateur
 exports.user_updatepage_get = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then(user => {
             if(user){
                 if(req.params.id == user.UserId){
-                    fetch(config.API_URI+'/styles',{
+                    fetch(process.env.API_URI+'/styles',{
                         method:'GET',
                         headers:{"Content-Type" : "application/json"},
                         mode:'cors'
@@ -176,14 +175,14 @@ exports.user_updatepage_patch = function(req,res,next){
     }
     else {
         if(Common.isConnected(req)){
-            fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+            fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
                 method:'GET',
                 headers:{"Content-Type" : "application/json"},
                 mode:'cors'
             }).then(response => response.json()).then(user => {
                 if(user){
                     if(req.params.id == user.UserId){
-                        fetch(config.API_URI+'/style/'+req.body.style,{
+                        fetch(process.env.API_URI+'/style/'+req.body.style,{
                             method:'GET',
                             headers:{"Content-Type" : "application/json"},
                             mode:'cors'
@@ -194,7 +193,7 @@ exports.user_updatepage_patch = function(req,res,next){
                             }
                             news._id = user._id;
                             req.session.Style = style.StyleUrl;//update l'utilisateur
-                            fetch(config.API_URI+'/user/update',{
+                            fetch(process.env.API_URI+'/user/update',{
                                 method:'PATCH',
                                 headers:{"Content-Type" : "application/json"},
                                 mode:'cors',
@@ -218,7 +217,7 @@ exports.user_updatepage_patch = function(req,res,next){
 // Renvoie la page pour changer les paramètres utilisateur
 exports.user_parameter_get = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
@@ -273,7 +272,7 @@ exports.user_parameter_patch = function(req,res,next){
     }
     else {
         if(Common.isConnected(req) && req.body.password1 == req.body.password2){
-            fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+            fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
                 method:'GET',
                 headers:{"Content-Type" : "application/json"},
                 mode:'cors'
@@ -284,7 +283,7 @@ exports.user_parameter_patch = function(req,res,next){
                             bcrypt.hash(news.UserPassword,salt).then(hashed=>{
                                 news.UserPassword = hashed;
                                 news._id = user._id;
-                                fetch(config.API_URI+'/user/update',{
+                                fetch(process.env.API_URI+'/user/update',{
                                     method:'PATCH',
                                     headers:{"Content-Type" : "application/json"},
                                     mode:'cors',
@@ -311,13 +310,13 @@ exports.user_parameter_patch = function(req,res,next){
 // Renvoie la page contenant toutes les personnes bannies
 exports.user_get_all_banned = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then( user => {
             if(user.UserStatus == 'Admin'){//Si on est bien un admin on peut alors accéder à la page contenant toutes les personnes bannies
-                fetch(config.API_URI+'/users/banned',{
+                fetch(process.env.API_URI+'/users/banned',{
                     method:'GET',
                     headers:{"Content-Type" : "application/json"},
                     mode:'cors'
@@ -348,13 +347,13 @@ exports.user_get_all_banned = function(req,res,next){
 // Renvoie la page pour confirmer si l'on veut bien unban un utilisateur
 exports.user_unban_someone_get = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then( user => {
             if(user.UserStatus == 'Admin'){
-                fetch(config.API_URI+'/user/by_identify/'+req.params.id,{
+                fetch(process.env.API_URI+'/user/by_identify/'+req.params.id,{
                     method:'GET',
                     headers:{"Content-Type" : "application/json"},
                     mode:'cors'
@@ -384,20 +383,20 @@ exports.user_unban_someone_get = function(req,res,next){
 exports.user_unban_someone_patch = function(req,res,next){
     console.log(req.params.id)
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then( user => {
             if(user.UserStatus == 'Admin'){//Si on est bien un admin on peut alors accéder à la page contenant toutes les personnes bannies
-                fetch(config.API_URI+'/user/by_identify/'+req.params.id,{
+                fetch(process.env.API_URI+'/user/by_identify/'+req.params.id,{
                     method:'GET',
                     headers:{"Content-Type" : "application/json"},
                     mode:'cors'
                 }).then(response => response.json()).then( user_res =>{
                     let news = {UserStatus : 'Classic'}
                     news._id = user_res._id;
-                    fetch(config.API_URI+'/user/update',{
+                    fetch(process.env.API_URI+'/user/update',{
                         method:'PATCH',
                         headers:{"Content-Type" : "application/json"},
                         mode:'cors',
@@ -417,13 +416,13 @@ exports.user_unban_someone_patch = function(req,res,next){
 // Renvoie la page pour confirmer si l'on veut bien ban un utilisateur
 exports.user_ban_someone_get = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then(user =>{
             if(user.UserStatus == 'Admin'){
-                fetch(config.API_URI+'/user/by_identify/'+req.params.id,{
+                fetch(process.env.API_URI+'/user/by_identify/'+req.params.id,{
                     method:'GET',
                     headers:{"Content-Type" : "application/json"},
                     mode:'cors'
@@ -452,16 +451,16 @@ exports.user_ban_someone_get = function(req,res,next){
 //Update les données d'un utilisateur en le bannissant
 exports.user_ban_someone_patch = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then(user => {
             if(user.UserStatus == 'Admin'){
-                fetch(config.API_URI+'/user/by_identify/'+req.params.id).then(response => response.json()).then(user_res => {
+                fetch(process.env.API_URI+'/user/by_identify/'+req.params.id).then(response => response.json()).then(user_res => {
                     let news = {UserStatus : 'Banned'}
                     news._id = user_res._id;
-                    fetch(config.API_URI+'/user/update',{
+                    fetch(process.env.API_URI+'/user/update',{
                         method:'PATCH',
                         headers:{"Content-Type" : "application/json"},
                         mode:'cors',
@@ -483,14 +482,14 @@ exports.user_ban_someone_patch = function(req,res,next){
 // Permet de follow un utilisateur en inserrant une instance dans la table associé
 exports.user_follow_someone_post = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_identify/'+req.params.id,{
+        fetch(process.env.API_URI+'/user/by_identify/'+req.params.id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then( user =>{
             if(user){
                 let object = {user_suivant:req.session.user_id,user_suivi:user._id}
-                fetch(config.API_URI+'/follow/is_following/user_suivant/'+object.user_suivant+'/user_suivi/'+object.user_suivi,{
+                fetch(process.env.API_URI+'/follow/is_following/user_suivant/'+object.user_suivant+'/user_suivi/'+object.user_suivi,{
                     method:'GET',
                     headers:{"Content-Type" : "application/json"},
                     mode:'cors',
@@ -500,7 +499,7 @@ exports.user_follow_someone_post = function(req,res,next){
                         let instance ={};
                          instance.UserIdSuivant= req.session.user_id
                          instance.UserIdSuivi= user._id;
-                        fetch(config.API_URI+'/follow'+'/create',{
+                        fetch(process.env.API_URI+'/follow'+'/create',{
                             method:'POST',
                             headers:{"Content-Type" : "application/json"},
                             mode:'cors',
@@ -527,27 +526,27 @@ exports.user_follow_someone_post = function(req,res,next){
 // Permet d'unfollow un utilisateur en supprimant l'instance de la table associé
 exports.user_unfollow_someone_delete = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_identify/'+req.params.id,{
+        fetch(process.env.API_URI+'/user/by_identify/'+req.params.id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then( user => {
             if(user){
                 let object = {user_suivant:req.session.user_id,user_suivi:user._id}
-                fetch(config.API_URI+'/follow/is_following/user_suivant/'+object.user_suivant+'/user_suivi/'+object.user_suivi,{
+                fetch(process.env.API_URI+'/follow/is_following/user_suivant/'+object.user_suivant+'/user_suivi/'+object.user_suivi,{
                     method:'GET',
                     headers:{"Content-Type" : "application/json"},
                     mode:'cors',
                 }).then(response => response.json()).then(count =>{
                     if(count.number > 0){//Si l'on suit déjà la personne
-                        fetch(config.API_URI+'/follow/instance/user_suivant/'+object.user_suivant+'/user_suivi/'+object.user_suivi,{
+                        fetch(process.env.API_URI+'/follow/instance/user_suivant/'+object.user_suivant+'/user_suivi/'+object.user_suivi,{
                             method:'GET',
                             headers:{"Content-Type" : "application/json"},
                             mode:'cors',
                         }).then(response => response.json()).then(follow => {
                             if(follow){//Si on suit bien quelqu'un
                                 let news = {_id: follow._id}
-                                fetch(config.API_URI+'/follow/delete',{
+                                fetch(process.env.API_URI+'/follow/delete',{
                                     method:'DELETE',
                                     headers:{"Content-Type" : "application/json"},
                                     mode:'cors',

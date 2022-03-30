@@ -5,7 +5,6 @@ let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 const fetch = require('node-fetch');
 const Common = require('../Common');
-const config = require('../config');
 
 
 
@@ -19,13 +18,13 @@ exports.index = function(req,res,next){
 //FEED page on GET
 exports.feed_get = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI + '/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI + '/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then( user_res => {
             if(user_res){
-                fetch(config.API_URI + '/follows/id_suivant/'+user_res._id,{
+                fetch(process.env.API_URI + '/follows/id_suivant/'+user_res._id,{
                     method:'GET',
                     headers:{"Content-Type" : "application/json"},
                     mode:'cors'
@@ -74,7 +73,7 @@ exports.feed_get = function(req,res,next){
                             if(PostARenvoyer.length > 0){
                                 res.render('feed',{title:'Feed',posts:PostARenvoyer, session:session})
                             }else{//Renvoie tout les posts des personnes non bannies dans le feed
-                                fetch(config.API_URI+'/posts/populated/',{
+                                fetch(process.env.API_URI+'/posts/populated/',{
                                     method:'GET',
                                     headers:{"Content-Type" : "application/json"},
                                     mode:'cors'
@@ -91,7 +90,7 @@ exports.feed_get = function(req,res,next){
                     })
                 })
             }else{//Récupère tout les posts des personnes non bannies et les renvoie dans le template feed
-                fetch(config.API_URI+'/posts/populated/',{
+                fetch(process.env.API_URI+'/posts/populated/',{
                     method:'GET',
                     headers:{"Content-Type" : "application/json"},
                     mode:'cors'
@@ -105,7 +104,7 @@ exports.feed_get = function(req,res,next){
             }
         })
     }else{//Comme ci-dessus si l'on est pas connecté
-        fetch(config.API_URI+'/posts/populated/',{
+        fetch(process.env.API_URI+'/posts/populated/',{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'

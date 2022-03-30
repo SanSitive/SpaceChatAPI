@@ -7,14 +7,13 @@ const { diffIndexes } = require('../models/user');
 
 const Common = require('../Common');
 const fetch = require('node-fetch');
-const config = require('../config');
 
 
 // GET request for create post page
 // Renvoie la page de création de post
 exports.user_create_postpage_get = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
@@ -67,14 +66,14 @@ exports.user_create_postpage_post = function(req,response,next){
     }
     else {
         if(Common.isConnected(req)){
-            fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+            fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
                 method:'GET',
                 headers:{"Content-Type" : "application/json"},
                 mode:'cors'
             }).then(response => response.json()).then( user => {
                 if(user){
                     if(req.params.user_id == user.UserId){
-                        fetch(config.API_URI+'/tags',{
+                        fetch(process.env.API_URI+'/tags',{
                             method:'GET',
                             headers:{"Content-Type" : "application/json"},
                             mode:'cors'
@@ -84,7 +83,7 @@ exports.user_create_postpage_post = function(req,response,next){
                             let tagsIdCreated = object.tagsIdCreated;
                             async.each(tagsNotCreated,function(tag,callback){
                                 let instance = {TagName: tag}
-                                fetch(config.API_URI+'/tag/create',{
+                                fetch(process.env.API_URI+'/tag/create',{
                                     method:'POST',
                                     headers:{"Content-Type" : "application/json"},
                                     mode:'cors',
@@ -100,7 +99,7 @@ exports.user_create_postpage_post = function(req,response,next){
                                     PostTags : tagsIdCreated,
                                     PostPicture : req.file.path
                                 }
-                                fetch(config.API_URI+'/post/create',{
+                                fetch(process.env.API_URI+'/post/create',{
                                     method:'POST',
                                     headers:{"Content-Type" : "application/json"},
                                     mode:'cors',
@@ -123,13 +122,13 @@ exports.user_create_postpage_post = function(req,response,next){
 // GET request for specific post
 // Renvoie la page d'un post spécifique
 exports.user_specific_postpage_get = function(req,res,next){
-    fetch(config.API_URI+'/post/populated/id/'+req.params.post_id,{
+    fetch(process.env.API_URI+'/post/populated/id/'+req.params.post_id,{
         method:'GET',
         headers:{"Content-Type" : "application/json"},
         mode:'cors' 
     }).then(response => response.json()).then(post =>{
         if(post){
-            fetch(config.API_URI+'/comments/'+req.params.post_id,{
+            fetch(process.env.API_URI+'/comments/'+req.params.post_id,{
                 method:'GET',
                 headers:{"Content-Type" : "application/json"},
                 mode:'cors'
@@ -146,6 +145,11 @@ exports.user_specific_postpage_get = function(req,res,next){
                 if(post.PostPicture){
                     post.PostPicture = post.PostPicture.slice(7)
                 }
+                for(let i=0; i<comments.length; i++){
+                    if(comments[i].CommentAuthorId.UserPicture){
+                        comments[i].CommentAuthorId.UserPicture = comments[i].CommentAuthorId.UserPicture.slice(7)
+                    }
+                }
                 res.render('post_detail',{title: 'Post detail', post: post,userPicture: user,comments: comments, session:session})
             }).catch(err => Common.error(err,res));
         }else{
@@ -159,14 +163,14 @@ exports.user_specific_postpage_get = function(req,res,next){
 // Renvoie la page d'update de post
 exports.user_specific_post_updatepage_get = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then( user =>{
             if(user){
                 if(req.params.user_id == user.UserId){//Si l'on est bien l'auteur du post on accède à la page de modification
-                    fetch(config.API_URI+'/post/'+req.params.post_id,{
+                    fetch(process.env.API_URI+'/post/'+req.params.post_id,{
                         method:'GET',
                         headers:{"Content-Type" : "application/json"},
                         mode:'cors'
@@ -211,14 +215,14 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
     }
     else {
         if(Common.isConnected(req)){
-            fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+            fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
                 method:'GET',
                 headers:{"Content-Type" : "application/json"},
                 mode:'cors'
             }).then(response => response.json()).then( user => {
                 if(user){
                     if(req.params.user_id == user.UserId){
-                        fetch(config.API_URI+'/tags',{
+                        fetch(process.env.API_URI+'/tags',{
                             method:'GET',
                             headers:{"Content-Type" : "application/json"},
                             mode:'cors'
@@ -228,7 +232,7 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
                             let tagsIdCreated = object.tagsIdCreated;
                             async.each(tagsNotCreated,function(tag,callback){//Pour chaque tags à créer on le fait
                                 let instance = {TagName : tag};
-                                fetch(config.API_URI+'/tag/create',{
+                                fetch(process.env.API_URI+'/tag/create',{
                                     method:'POST',
                                     headers:{"Content-Type" : "application/json"},
                                     mode:'cors',
@@ -244,7 +248,7 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
                                     PostDescription : req.body.description,
                                     PostTags : tagsIdCreated,
                                 }
-                                fetch(config.API_URI+'/post/update',{
+                                fetch(process.env.API_URI+'/post/update',{
                                     method:'PATCH',
                                     headers:{"Content-Type" : "application/json"},
                                     mode:'cors',
@@ -268,14 +272,14 @@ exports.user_specific_post_updatepage_patch = function(req,response,next){
 // Renvoie une page pour confirmer que l'on veut bien détruire le post
 exports.user_specific_post_deletepage_get = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
         }).then(response => response.json()).then(user => {
             if (user){
                 if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){//Si l'utilisateur est bien celui concerné par la page
-                    fetch(config.API_URI+'/post/'+req.params.post_id,{
+                    fetch(process.env.API_URI+'/post/'+req.params.post_id,{
                         method:'GET',
                         headers:{"Content-Type" : "application/json"},
                         mode:'cors'
@@ -306,7 +310,7 @@ exports.user_specific_post_deletepage_get = function(req,res,next){
 // Détruit le post passé en paramètre
 exports.user_specific_post_deletepage_delete = function(req,res,next){
     if(Common.isConnected(req)){
-        fetch(config.API_URI+'/user/by_id/'+req.session.user_id,{
+        fetch(process.env.API_URI+'/user/by_id/'+req.session.user_id,{
             method:'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'
@@ -314,7 +318,7 @@ exports.user_specific_post_deletepage_delete = function(req,res,next){
             if(user){
                 if(req.params.user_id == user.UserId || user.UserStatus == 'Admin'){
                     let object = {_id: req.params.post_id};
-                    fetch(config.API_URI+'/post/delete',{
+                    fetch(process.env.API_URI+'/post/delete',{
                         method:'DELETE',
                         headers:{"Content-Type" : "application/json"},
                         mode:'cors',

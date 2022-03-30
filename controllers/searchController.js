@@ -1,5 +1,4 @@
 const fetch = require('node-fetch');
-const config = require('../config');
 const Common = require('../Common');
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
@@ -13,7 +12,7 @@ const tag_function = require('../API/tag');
 //GET (Users may find people who they already follow)
 // But : Charger une page contenant que des utilisateurs non suivies par l'utilisateur
 exports.search_get = function(req,res,next){
-    fetch(config.API_URI + '/posts/populated',{
+    fetch(process.env.API_URI + '/posts/populated',{
         method:'GET',
         headers:{"Content-Type" : "application/json"},
         mode:'cors'

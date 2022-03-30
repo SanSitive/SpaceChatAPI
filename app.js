@@ -8,6 +8,7 @@ let helmet = require('helmet');
 let compression = require('compression');
 let multer = require('multer');
 let methodOverride = require('method-override');
+require('dotenv').config()
 
 let indexRouter = require('./routes/index');
 let userRouter = require('./routes/user');
@@ -26,7 +27,7 @@ let API_StyleRouter = require('./routes/API_Style')
 let app = express();
 let mongoose = require('mongoose');
 const { join } = require('path');
-let mongoDB = 'mongodb+srv://SanSitive:Overflow34*=@clusterspacechat.froq1.mongodb.net/SpaceChat?retryWrites=true&w=majority';
+let mongoDB = process.env.MONGOOSE_LINK //'mongodb+srv://SanSitive:Overflow34*=@clusterspacechat.froq1.mongodb.net/SpaceChat?retryWrites=true&w=majority';
 mongoose.connect(mongoDB,{useNewUrlParser: true, useUnifiedTopology: true});
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error'));

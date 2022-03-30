@@ -2,7 +2,6 @@
 let mongoose = require('mongoose');
 const { body,validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs')
-const config = require('../config');
 const Common = require('../Common')
 const fetch = require('node-fetch');
 
@@ -40,7 +39,7 @@ exports.connection_getdata = function(req,res,next){
         };
         // Data from form is valid. Check DB
 
-        fetch(config.API_URI + '/user/populated/by_identify/'+user_data.pseudo,{
+        fetch(process.env.API_URI + '/user/populated/by_identify/'+user_data.pseudo,{
             method: 'GET',
             headers:{"Content-Type" : "application/json"},
             mode:'cors'

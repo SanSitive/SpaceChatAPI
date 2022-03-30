@@ -8,7 +8,6 @@ let router = express.Router();
 
 //Required controller modules
 let connection_controller = require('../controllers/connectionController');
-const comment_controller = require('../controllers/commentController');
 const { CustomValidation } = require('express-validator/src/context-items');
 
 /// CONNECTION ROUTES ///

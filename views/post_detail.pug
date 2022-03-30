@@ -5,18 +5,18 @@ block content
     
     div.post-card.border-secondary.border
             div.card-header
-                img(src = ((undefined == userPicture) ? '/images/default_user_image.jpg' : '/'+ userPicture ) onerror="this.src='/images/no_image_available.png'").image-user-feed.rounded-circle
+                img(src = ((undefined == userPicture) ? '/images/default_user_image.jpg' : '/'+ userPicture ) ).image-user-feed.rounded-circle.img_author_error
                 div.card-title
                     a(href='/home/user/'+post.PostAuthor.UserId)
                         h5='@'+post.PostAuthor.UserId
             if(session)
                 if(session.Status == 'Admin')
-                form(method='POST' action='/home/user/'+post.PostAuthorId+'/post/'+post._id+'/delete?_method=get' encode="X-www-form-urlencoded"  style="display:inline-block")
+                form(method='POST' action='/home/user/'+post.PostAuthor.UserId+'/post/'+post._id+'/delete?_method=get' encode="X-www-form-urlencoded"  style="display:inline-block")
                     div.form-group
                         input.form-control(type='hidden',name='delete', required='true' )
                         button.btn.btn-dark(type='submit') Delete
-            div.image-post-feed
-            img(src= ((undefined == post.PostPicture) ? '' : '/'+post.PostPicture) onerror="this.onerror=null;this.src='/images/no_image_available.png';").image-post-feed.img_post_error
+            div.image-post-feed.img_post_error
+            img(src= ((undefined == post.PostPicture) ? '/images/no_available_image.png' : '/'+post.PostPicture) ).image-post-feed.img_post_error
             div.card-body
                 p.card-text= post.PostDescription  
                 p= 'Publié le ' + post.PostDate
